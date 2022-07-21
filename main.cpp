@@ -1,6 +1,8 @@
 #include <iostream>
-
+#include "simplejson.h"
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    using namespace sj;
+    ListType t = new JsonObject();
+    t = 2;
+    std::cout << "success!";
 }
