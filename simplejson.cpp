@@ -11,52 +11,62 @@ namespace sj {
         base = nullptr;
     }
 
-    bool ListType::isInt() {
+    inline
+    bool ListType::isInt() const{
         if (base.index() != 0) return false;
         return std::get<0>(base).index() == 0;
     }
 
-    int ListType::getInt() {
+    inline
+    int ListType::getInt() const{
         return std::get<int>(std::get<0>(base));
     }
 
-    bool ListType::isDouble() {
+    inline
+    bool ListType::isDouble() const{
         if (base.index() != 0) return false;
         return std::get<0>(base).index() == 1;
     }
 
-    double ListType::getDouble() {
+    inline
+    double ListType::getDouble() const{
         return std::get<double>(std::get<0>(base));;
     }
 
-    bool ListType::isBool() {
+    inline
+    bool ListType::isBool() const{
         if (base.index() != 0) return false;
         return std::get<0>(base).index() == 2;
     }
 
-    bool ListType::getBool() {
+    inline
+    bool ListType::getBool() const{
         return std::get<bool>(std::get<0>(base));;
     }
 
-    bool ListType::isString() {
+    inline
+    bool ListType::isString() const{
         if (base.index() != 0) return false;
         return std::get<0>(base).index() == 3;
     }
 
-    std::string ListType::getString() {
+    inline
+    std::string ListType::getString() const{
         return std::get<std::string>(std::get<0>(base));;
     }
 
-    bool ListType::isJson() {
+    inline
+    bool ListType::isJson() const{
         return base.index() == 1;
     }
 
-    JsonObject *ListType::getJson() {
-        return nullptr;
+    inline
+    JsonObject *ListType::getJson() const{
+        return std::get<JsonObject*>(base);
     }
 
     JsonObject::~JsonObject() {
-        std::cout << "JsonObject deleted" << std::endl;
+        std::cout << std::endl << "JsonObject deleted" << std::endl;
     }
 
     List::List(const std::initializer_list<ListBase> &t) {
@@ -67,23 +77,75 @@ namespace sj {
 
     List::~List() {
          for (auto& temp: list) {
-
+             if (temp.isJson()) temp.deleteJson();
          }
     }
 
-    ListType &List::operator[](int index) {
+    inline
+    ListType &List::operator[](size_t index) {
         return list[index];
     }
 
     void List::append(const ListBase &t) {
-
+        list.emplace_back(t);
     }
 
-    void List::earse(int index) {
-
+    void List::remove(size_t index) {
+        if (list[index].isJson()) list[index].deleteJson();
+        list.erase(list.begin() + index);
     }
 
     void List::clear() {
+        for (auto& temp: list) {
+            if (temp.isJson()) temp.deleteJson();
+        }
+        list.clear();
+    }
 
+    Dict::Dict(const std::initializer_list<DictType> &t) {
+        for (auto& temp: t) {
+            dict[temp.first] = temp.second;
+        }
+    }
+
+    Dict::~Dict() {
+        for (auto& temp: dict) {
+            if (temp.second.isJson()) temp.second.deleteJson();
+        }
+    }
+
+    void Dict::remove(std::string key) {
+        if (dict[key].isJson()) dict[key].deleteJson();
+        dict.erase(key);
+    }
+
+    void Dict::clear() {
+        for (auto& temp: dict) {
+            if (temp.second.isJson()) temp.second.deleteJson();
+        }
+        dict.clear();
+    }
+
+    inline
+    ListType& Dict::operator[](const std::string &key) {
+        return dict[key];
+    }
+
+    std::ostream &Writer::printListType(std::ostream &os, const sj::ListType &t) {
+        if (t.isJson())     os << t.getJson();
+        if (t.isInt())      os << t.getInt();
+        if (t.isDouble())   os << t.getDouble();
+        if (t.isBool())     return t.getBool() ? os << "true" : os << "false";
+        if (t.isString())   os << "\"" <<t.getString() << "\"";
+        return os;
+    }
+
+    std::ostream &operator<<(std::ostream &os, const ListType &t) {
+        return Writer::printListType(os, t);
+    }
+
+    std::ostream& operator<<(std::ostream& os, const std::pair<std::string, ListType>& t) {
+        os << "\"" << t.first << "\": ";
+        return Writer::printListType(os, t.second);
     }
 } // sj
