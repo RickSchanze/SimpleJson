@@ -69,6 +69,47 @@ namespace sj {
         std::cout << std::endl << "JsonObject deleted" << std::endl;
     }
 
+    JsonObject::JsonObject(const std::initializer_list<ListBase> &t) {
+        list = new List(t);
+        dict = nullptr;
+    }
+
+    JsonObject::JsonObject(const std::initializer_list<std::pair<std::string, ListBase>> &t) {
+        dict = new Dict(t);
+        list = nullptr;
+    }
+
+    bool JsonObject::isList() const{
+        return list != nullptr;
+    }
+
+    List *JsonObject::getList() const{
+        return list;
+    }
+
+    bool JsonObject::isDict() const{
+        return dict != nullptr;
+    }
+
+    Dict *JsonObject::getDict() const{
+        return dict;
+    }
+
+    ListType &JsonObject::operator[](size_t index) {
+        if (isDict()) throw std::logic_error("this JsonObject contains a Dict, not List");
+        return (*list)[index];
+    }
+
+    ListType &JsonObject::operator[](const std::string &key) {
+        if (isList()) throw std::logic_error("this JsonObject contains a List, not Dict");
+        return (*dict)[key];
+    }
+
+    size_t JsonObject::size() {
+        return this->isList() ? this->getList()->size()
+                              : this->getDict()->size();
+    }
+
     List::List(const std::initializer_list<ListBase> &t) {
         for (auto& temp: t) {
             list.emplace_back(temp);
@@ -86,6 +127,7 @@ namespace sj {
         return list[index];
     }
 
+    inline
     void List::append(const ListBase &t) {
         list.emplace_back(t);
     }
@@ -127,25 +169,8 @@ namespace sj {
     }
 
     inline
-    ListType& Dict::operator[](const std::string &key) {
+    ListType& Dict::operator[](const std::string &key){
         return dict[key];
     }
 
-    std::ostream &Writer::printListType(std::ostream &os, const sj::ListType &t) {
-        if (t.isJson())     os << t.getJson();
-        if (t.isInt())      os << t.getInt();
-        if (t.isDouble())   os << t.getDouble();
-        if (t.isBool())     return t.getBool() ? os << "true" : os << "false";
-        if (t.isString())   os << "\"" <<t.getString() << "\"";
-        return os;
-    }
-
-    std::ostream &operator<<(std::ostream &os, const ListType &t) {
-        return Writer::printListType(os, t);
-    }
-
-    std::ostream& operator<<(std::ostream& os, const std::pair<std::string, ListType>& t) {
-        os << "\"" << t.first << "\": ";
-        return Writer::printListType(os, t.second);
-    }
 } // sj

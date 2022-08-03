@@ -105,33 +105,42 @@ namespace sj {
         void clear();
         size_t size() {return dict.size();}
 
-        ListType&operator[](const std::string& key);
+        ListType& operator[](const std::string& key);
     private:
         std::unordered_map<std::string, ListType> dict;
     };
 
     class JsonObject {
     public:
-        JsonObject() = default;
+        JsonObject(): list(nullptr), dict(nullptr) {}
+        JsonObject(List* l): list(l), dict(nullptr) {}
+        JsonObject(Dict* d): list(nullptr), dict(d) {}
+        JsonObject(List* l, Dict* d): list(l), dict(d) {}
+        JsonObject(const std::initializer_list<ListBase>& t) ;
+        JsonObject(const std::initializer_list<std::pair<std::string, ListBase>>& t);
         ~JsonObject();
+
+        bool isList() const;
+        List* getList() const;
+        bool isDict() const;
+        Dict* getDict() const;
+        ListType& operator[](size_t index);
+        ListType& operator[](const std::string& key);
+        size_t size();
+
     private:
-        int a;
+        List* list;
+        Dict* dict;
     };
 
     class Writer {
-    public:
-        friend std::ostream& operator<<(std::ostream&, const ListType& t);
-        friend std::ostream& operator<<(std::ostream&, const std::pair<std::string, ListType>& t);
-    private:
-        static std::ostream& printListType(std::ostream& os, const ListType& t);
+
     };
 
     class Reader {
 
     };
 
-    std::ostream& operator<<(std::ostream& os, const ListType& t);
-    std::ostream& operator<<(std::ostream& os, const std::pair<std::string, ListType>& t);
 } // sj
 
 #endif //SIMPLEJSON_SIMPLEJSON_H
