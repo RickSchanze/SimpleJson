@@ -66,6 +66,10 @@ namespace sj {
     }
 
     JsonObject::~JsonObject() {
+        delete list;
+        delete dict;
+        list = nullptr;
+        dict = nullptr;
         std::cout << std::endl << "JsonObject deleted" << std::endl;
     }
 
@@ -93,16 +97,6 @@ namespace sj {
 
     Dict *JsonObject::getDict() const{
         return dict;
-    }
-
-    ListType &JsonObject::operator[](size_t index) {
-        if (isDict()) throw std::logic_error("this JsonObject contains a Dict, not List");
-        return (*list)[index];
-    }
-
-    ListType &JsonObject::operator[](const std::string &key) {
-        if (isList()) throw std::logic_error("this JsonObject contains a List, not Dict");
-        return (*dict)[key];
     }
 
     size_t JsonObject::size() {
@@ -173,4 +167,104 @@ namespace sj {
         return dict[key];
     }
 
+    void Writer::writeList(std::ostream& os, List *l, int indent, int begin) {
+        writeSpace(os, indent, begin - 1);
+        os << "[\n";
+        for (auto it = l->begin(); it != l->end(); it++) {
+            if (it + 1 == l->end()) {
+                writeListType(os, *it, indent, begin + 1);
+            } else {
+                writeListType(os, *it, indent, begin + 1);
+                os << ",";
+            }
+            os << "\n";
+        }
+        writeSpace(os, indent, begin);
+        os << "]";
+    }
+
+    void Writer::writeDict(std::ostream& os, Dict *d, int indent, int begin) {
+        writeSpace(os, indent, begin - 1);
+        os << "{\n";
+        size_t len = 0;
+        for (auto it = d->begin(); it != d->end(); it++) {
+            if (len + 1 == d->size()) {
+                writeDictType(os, *it, indent, begin + 1);
+            } else {
+                writeDictType(os, *it, indent, begin + 1);
+                os << ",";
+            }
+            os << "\n";
+        }
+        writeSpace(os, indent, begin);
+        os << "}";
+    }
+
+    void Writer::writeListType(std::ostream& os, const ListType &t, int indent, int begin) {
+        writeSpace(os, indent, begin);
+        if (t.isInt())
+            os << t.getInt();
+        if (t.isDouble())
+            os << t.getDouble();
+        if (t.isBool()) {
+            if (t.getBool())
+                os << "true";
+            else
+                os << "false";
+        }
+        if (t.isString()) os << "\"" << t.getString() << "\"";
+        if (t.isJson()) writeJson(os, t.getJson(), indent, begin);
+    }
+
+    void Writer::writeSpace(std::ostream& os, int indent, int begin) {
+        for (int i = 0; i < begin; i++) {
+            for (int j = 0; j < indent; j++) {
+                os << " ";
+            }
+        }
+    }
+
+    void Writer::writeJson(std::ostream& os, JsonObject *obj, int indent, int begin) {
+        if (obj->isList())
+            writeList(os, obj->getList(), indent, begin);
+        if (obj->isDict())
+            writeDict(os, obj->getDict(), indent, begin);
+    }
+
+    void Writer::writeDictType(std::ostream& os, const std::pair<std::string, ListType> &t, int indent, int begin) {
+        writeSpace(os, indent, begin);
+        os << "\"" << t.first << "\": ";
+        if (t.second.isInt())
+            os << t.second.getInt();
+        if (t.second.isDouble())
+            os << t.second.getDouble();
+        if (t.second.isBool()) {
+            if (t.second.getBool())
+                os << "true";
+            else
+                os << "false";
+        }
+        if (t.second.isString())
+            os << "\"" << t.second.getString() << "\"";
+        if (t.second.isJson())
+            writeJson(os, t.second.getJson(), indent, begin);
+    }
+
+    void Writer::writeJsonPtr(std::ostream &, JsonObject *ptr) {
+        printf("%p", ptr);
+    }
+
+    std::ostream &operator<<(std::ostream &os, JsonObject *obj) {
+        Writer::writeJson(os, obj);
+        return os;
+    }
+
+    std::ostream &operator<<(std::ostream &os, Ptr<JsonObject> obj) {
+        Writer::writeJson(os, obj);
+        return os;
+    }
+
+    void Writer::writeJson(std::ostream& os, Ptr<JsonObject> obj, int indent, int begin) {
+        writeJson(os, obj.get(), indent, begin);
+    }
 } // sj

@@ -10,11 +10,14 @@
 #include <vector>
 #include <unordered_map>
 #include <initializer_list>
+#include <memory>
 namespace sj {
     class JsonObject;
     typedef std::variant<int, double, bool, std::string> BaseType;
     typedef std::variant<BaseType, JsonObject*> ListBase;
 
+    template <typename T>
+    using Ptr = std::shared_ptr<T>;
     // 容纳一个Json的基本容器
     // 新定义是为了防止内存泄漏
     class ListType {
@@ -124,8 +127,6 @@ namespace sj {
         List* getList() const;
         bool isDict() const;
         Dict* getDict() const;
-        ListType& operator[](size_t index);
-        ListType& operator[](const std::string& key);
         size_t size();
 
     private:
@@ -134,13 +135,31 @@ namespace sj {
     };
 
     class Writer {
+    public:
+        // 默认四格缩进
+        friend std::ostream& operator<<(std::ostream& os, JsonObject* obj);
+        friend std::ostream& operator<<(std::ostream& os, Ptr<JsonObject> obj);
 
+        // indent控制缩进，begin控制空格，请不要修改传入begin参数
+        static void writeJson(std::ostream&, JsonObject* obj, int indent = 4, int begin = 0);
+        static void writeJson(std::ostream&, Ptr<JsonObject> obj, int indent = 4, int begin = 0);
+        static void writeJsonPtr(std::ostream&, JsonObject* ptr);
+        static void writeList(std::ostream&, List* l, int indent = 4, int begin = 0);
+        static void writeDict(std::ostream&, Dict* l, int indent = 4, int begin = 0);
+    private:
+        // 输出各种结构
+
+        static void writeListType(std::ostream&, const ListType& t, int indent, int begin);
+        static void writeDictType(std::ostream&, const std::pair<std::string, ListType>& t, int indent, int begin);
+        static void writeSpace(std::ostream&, int indent, int begin);
     };
 
     class Reader {
 
     };
 
+    std::ostream& operator<<(std::ostream& os, JsonObject* obj);
+    std::ostream& operator<<(std::ostream& os, Ptr<JsonObject> obj);
 } // sj
 
 #endif //SIMPLEJSON_SIMPLEJSON_H
