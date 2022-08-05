@@ -2,7 +2,6 @@
 #include <memory>
 #include "simplejson.h"
 int main() {
-
     setbuf(stdout,NULL);
     while(true)
     {
