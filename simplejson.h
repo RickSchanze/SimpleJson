@@ -43,7 +43,6 @@ namespace sj {
         // 释放JsonObject*
         void deleteJson();
 
-
         // 定义复制运算符
         template<typename T, typename = std::enable_if_t<std::is_convertible_v<T, ListBase>>>
         ListType& operator=(const T& t) {
@@ -64,7 +63,6 @@ namespace sj {
         operator JsonObject*() {
             return std::get<1>(base);
         }
-
 
     private:
         ListBase base;
@@ -109,6 +107,7 @@ namespace sj {
         size_t size() {return dict.size();}
 
         ListType& operator[](const std::string& key);
+
     private:
         std::unordered_map<std::string, ListType> dict;
     };
@@ -146,16 +145,29 @@ namespace sj {
         static void writeJsonPtr(std::ostream&, JsonObject* ptr);
         static void writeList(std::ostream&, List* l, int indent = 4, int begin = 0);
         static void writeDict(std::ostream&, Dict* l, int indent = 4, int begin = 0);
+
     private:
         // 输出各种结构
-
         static void writeListType(std::ostream&, const ListType& t, int indent, int begin);
         static void writeDictType(std::ostream&, const std::pair<std::string, ListType>& t, int indent, int begin);
         static void writeSpace(std::ostream&, int indent, int begin);
     };
 
     class Reader {
+    public:
+        static JsonObject* fromStringRow(const std::string& jsonStr);
+        static JsonObject* fromFileRow(const std::string& fileStr);
+        static Ptr<JsonObject> fromStringShared(const std::string& jsonStr);
+        static Ptr<JsonObject> fromFileShared(const std::string& fileStr);
 
+    private:
+        bool readBool(const std::string& jsonStr, size_t& now, size_t& length);
+        int readInt(const std::string& jsonStr, size_t& now, size_t& length);
+        double readDouble(const std::string& jsonStr, size_t& now, size_t& length);
+        std::string readString(const std::string& jsonStr, size_t& now, size_t& length);
+
+        JsonObject* createList(const std::string& jsonStr, size_t& now, size_t& length);
+        JsonObject* createDict(const std::string& jsonStr, size_t& now, size_t& length);
     };
 
     std::ostream& operator<<(std::ostream& os, JsonObject* obj);

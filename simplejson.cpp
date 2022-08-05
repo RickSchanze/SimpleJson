@@ -267,4 +267,45 @@ namespace sj {
     void Writer::writeJson(std::ostream& os, Ptr<JsonObject> obj, int indent, int begin) {
         writeJson(os, obj.get(), indent, begin);
     }
+
+
+    JsonObject *Reader::fromStringRow(const std::string &jsonStr) {
+        return nullptr;
+    }
+
+    JsonObject *Reader::fromFileRow(const std::string &fileStr) {
+        return nullptr;
+    }
+
+    Ptr<JsonObject> Reader::fromStringShared(const std::string &jsonStr) {
+        return Ptr<JsonObject>(fromFileRow(jsonStr));
+    }
+
+    Ptr<JsonObject> Reader::fromFileShared(const std::string &fileStr) {
+        return Ptr<JsonObject>(fromFileRow(fileStr));
+    }
+
+    bool Reader::readBool(const std::string &jsonStr, size_t &now, size_t &length) {
+        return false;
+    }
+
+    int Reader::readInt(const std::string &jsonStr, size_t &now, size_t &length) {
+        return 0;
+    }
+
+    double Reader::readDouble(const std::string &jsonStr, size_t &now, size_t &length) {
+        return 0;
+    }
+
+    std::string Reader::readString(const std::string &jsonStr, size_t &now, size_t &length) {
+        return std::string();
+    }
+
+    JsonObject *Reader::createList(const std::string &jsonStr, size_t &now, size_t &length) {
+        return nullptr;
+    }
+
+    JsonObject *Reader::createDict(const std::string &jsonStr, size_t &now, size_t &length) {
+        return nullptr;
+    }
 } // sj
