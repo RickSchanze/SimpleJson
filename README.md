@@ -1,3 +1,4 @@
+# 停止维护
 ## SimpleJson
 该仓库是一个使用C++17和其标准库写的一个json解析器，内部使用std::vector, std::unordered_map, std::variant。
 ## 该库的缺点
