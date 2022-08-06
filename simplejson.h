@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <initializer_list>
+#include <optional>
 #include <memory>
 namespace sj {
     class JsonObject;
@@ -74,7 +75,7 @@ namespace sj {
         List(const std::initializer_list<ListBase>& t);
         ~List();
 
-        ListType&operator[](size_t index);
+        ListType& operator[](size_t index);
         void append(const ListBase& t);
         void remove(size_t index);
         void clear();
@@ -126,7 +127,7 @@ namespace sj {
         List* getList() const;
         bool isDict() const;
         Dict* getDict() const;
-        size_t size();
+        size_t size() const;
 
     private:
         List* list;
@@ -155,19 +156,19 @@ namespace sj {
 
     class Reader {
     public:
-        static JsonObject* fromStringRow(const std::string& jsonStr);
-        static JsonObject* fromFileRow(const std::string& fileStr);
+        static JsonObject* fromStringRaw(const std::string& jsonStr);
+        static JsonObject* fromFileRaw(const std::string& fileStr);
         static Ptr<JsonObject> fromStringShared(const std::string& jsonStr);
         static Ptr<JsonObject> fromFileShared(const std::string& fileStr);
 
     private:
-        bool readBool(const std::string& jsonStr, size_t& now, size_t& length);
-        int readInt(const std::string& jsonStr, size_t& now, size_t& length);
-        double readDouble(const std::string& jsonStr, size_t& now, size_t& length);
-        std::string readString(const std::string& jsonStr, size_t& now, size_t& length);
+        static bool readBool(const std::string& jsonStr, size_t& now, size_t& length);
+        static int readInt(const std::string& jsonStr, size_t& now, size_t& length);
+        static double readDouble(const std::string& jsonStr, size_t& now, size_t& length);
+        static std::string readString(const std::string& jsonStr, size_t& now, size_t& length);
 
-        JsonObject* createList(const std::string& jsonStr, size_t& now, size_t& length);
-        JsonObject* createDict(const std::string& jsonStr, size_t& now, size_t& length);
+        static JsonObject* createList(const std::string& jsonStr, size_t& now, size_t& length);
+        static JsonObject* createDict(const std::string& jsonStr, size_t& now, size_t& length);
     };
 
     std::ostream& operator<<(std::ostream& os, JsonObject* obj);
